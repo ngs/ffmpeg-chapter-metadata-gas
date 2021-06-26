@@ -13,12 +13,14 @@ function doGet() {
 }
 
 function getData() {
-  const { artist, title } = getMetadata();
+  const metadata = getMetadata(true);
+  delete metadata.duration;
   const chapters = getChapters();
   return [
     ';FFMETADATA1',
-    `title=${escapeString(title)}`,
-    `artist=${escapeString(artist)}`,
+    ';Usage: ffmpeg -i source.mp4 -i ffmpeg-metadata.txt -map_metadata 1 -codec copy out.mp4',
+    '',
+    ...Object.keys(metadata).map(k => `${k}=${escapeString(metadata[k])}`),
     ...chapters.map(({ start, end, title }) => [
       '',
       '[CHAPTER]',
@@ -58,13 +60,13 @@ function getChapters() {
   }
 }
 
-function getMetadata() {
+function getMetadata(displayValue = false) {
   const data = {};
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Metadata');
   for (let i = 1; ; i++) {
     const range = sheet.getRange(i, 1, 1, 2);
-    const [[key, value]] = range.getValues();
+    const [[key, value]] = displayValue ? range.getDisplayValues() : range.getValues();
     if (!key) break;
     data[key] = value;
   }
@@ -72,5 +74,5 @@ function getMetadata() {
 }
 
 function escapeString(str) {
-  return str.replace(/(\s|#)/g, '\\$1');
+  return `${str}`.replace(/(\s|#)/g, '\\$1');
 }
