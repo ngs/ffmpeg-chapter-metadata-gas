@@ -67,10 +67,9 @@ function getMetadata(displayValue = false) {
   for (let i = 1; ; i++) {
     const range = sheet.getRange(i, 1, 1, 2);
     const [[key, value]] = displayValue ? range.getDisplayValues() : range.getValues();
-    if (!key) break;
+    if (!key) return data;
     data[key] = value;
   }
-  return data;
 }
 
 function escapeString(str) {
